@@ -1,0 +1,10 @@
+{
+  "name": "Twitch AdBlock Fix",
+  "version": "1.0",
+  "description": "Replaces Twitch's player with Twitch's embed player.",
+  "manifest_version": 2,
+
+  "content_scripts": [
+    { "matches": ["*://*.twitch.tv/*"], "js": ["background.js"] }
+  ]
+}
