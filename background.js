@@ -3,37 +3,68 @@ console.log("LOAD");
 const playerClass = "video-player";
 const playClass =
   "tw-align-items-center tw-align-middle tw-border-bottom-left-radius-medium tw-border-bottom-right-radius-medium tw-border-top-left-radius-medium tw-border-top-right-radius-medium tw-button-icon tw-button-icon--overlay tw-core-button tw-core-button--overlay tw-inline-flex tw-interactive tw-justify-content-center tw-overflow-hidden tw-relative";
+const titleClass =
+  "tw-c-text-base tw-font-size-4 tw-line-height-heading tw-semibold tw-title";
 const deleteInterval = 100;
+const locationInterval = 1000;
+
+const iframeID = "videopt";
 
 const getChannel = () => window.location.href.split("/")[3];
 const buildURL = () =>
   `https://player.twitch.tv/?channel=${getChannel()}&parent=twitch.tv`;
 
-let intervalID;
-const deleteVideo = () => {
-  const video = document.querySelector("video");
-
-  if (video) {
-    console.log("Video", video);
-    clearInterval(intervalID);
-    video.remove();
-    console.log("deleted");
-
-    const button = document.getElementsByClassName(playClass)[0];
-    if (button.ariaLabel.startsWith("Pause")) button.click();
-  }
+const updateSrc = () => {
+  const iframe = document.getElementById(iframeID);
+  if (iframe) iframe.setAttribute("src", buildURL());
 };
 
-const videoplayer = document.getElementsByClassName(playerClass)[0];
-const container = videoplayer.parentElement;
+const pauseBackground = () => {
+  const button = Array.from(
+    document.getElementsByClassName(playClass)
+  ).filter((v) => v.getAttribute("data-a-player-state"))[0];
+  const channel = getChannel();
 
-const iframe = document.createElement("iframe");
-iframe.setAttribute("class", playerClass);
-iframe.setAttribute("src", buildURL());
+  console.log("Button", button);
+  console.log("Channel", channel);
+  if (!button || channel === "browse" || channel === "videos") return;
 
-container.append(iframe);
+  const state = button.getAttribute("data-a-player-state");
+  console.log("State", state);
+  if (state === "playing") button.click();
+};
 
-intervalID = setInterval(deleteVideo, deleteInterval);
-console.log("Interval", intervalID);
+let prevChannel;
+handleLocation = () => {
+  const newChannel = getChannel();
+  if (newChannel === "browse" || newChannel === "videos") {
+    const iframe = document.getElementById(iframeID);
+    if (iframe) iframe.remove();
+  }
 
-// const updateChannel = () => iframe.setAttribute("src", buildURL());
+  if (prevChannel !== newChannel) {
+    if (
+      prevChannel !== "browse" &&
+      prevChannel !== "videos" &&
+      !document.getElementById(iframeID)
+    )
+      createIframe();
+    prevChannel = newChannel;
+    updateSrc();
+  }
+
+  pauseBackground();
+};
+
+const createIframe = () => {
+  const videoplayer = document.getElementsByClassName(playerClass)[0];
+  const container = videoplayer.parentElement;
+
+  const iframe = document.createElement("iframe");
+  iframe.setAttribute("id", iframeID);
+  iframe.setAttribute("class", playerClass);
+
+  container.append(iframe);
+};
+
+locationID = setInterval(handleLocation, locationInterval);

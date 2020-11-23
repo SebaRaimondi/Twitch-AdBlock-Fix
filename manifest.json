@@ -5,6 +5,10 @@
   "manifest_version": 2,
 
   "content_scripts": [
-    { "matches": ["*://*.twitch.tv/*"], "js": ["background.js"] }
+    {
+      "matches": ["*://*.twitch.tv/*"],
+      "excludes_globs": ["*://*.twitch.tv/browse*", "*://*.twitch.tv/videos*"],
+      "js": ["background.js"]
+    }
   ]
 }
